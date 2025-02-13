@@ -32,7 +32,6 @@ class ChatbotViewModel(application: Application) : AndroidViewModel(application)
     fun sendMessage(userMessage: String) {
         viewModelScope.launch {
             try {
-                Log.d("ChatbotDebug", "إرسال رسالة المستخدم: $userMessage")
                 chatbotDao.insertMessage(Message(role = "user", content = userMessage))
                 val updatedMessages =
                     _chatMessages.value + Message(role = "user", content = userMessage)
@@ -47,22 +46,19 @@ class ChatbotViewModel(application: Application) : AndroidViewModel(application)
 
                     )
                 )
-                Log.d("ChatbotDebug", "طلب الإرسال إلى API: $request")
 
                 val response =
                     RetrofitInstanceOpenAi.api.getCompletion(authHeader = apiKey, request = request)
-                Log.d("ChatbotDebug", "تم استلام الاستجابة من API: $response")
 
 
                 val botResponse = response.choices.first().message.content
-                Log.d("ChatbotDebug", "رسالة البوت: $botResponse")
 
                 chatbotDao.insertMessage(Message(role = "assistant", content = botResponse))
 
                 _chatMessages.value =
                     updatedMessages + Message(role = "assistant", content = botResponse)
             } catch (e: Exception) {
-                Log.e("ChatbotError", "خطأ في الاتصال: ${e.message}", e)
+                Log.e("ChatbotError", "${e.message}", e)
             }
         }
     }
